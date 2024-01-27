@@ -32,10 +32,11 @@ if nsei_data is not None and dji_data is not None:
     merged_data = pd.merge(nsei_data, dji_data, how='inner', left_index=True, right_index=True)
 
     # Train regression model
-    X = merged_data.iloc[:, 1:]  # Features (excluding Date and ^NSEI columns)
-    
+    X = merged_data[['Open_x', 'High_x', 'Low_x', 'Close_x', 'Adj Close_x', 'Volume_x', 
+                     'Open_y', 'High_y', 'Low_y', 'Close_y', 'Adj Close_y', 'Volume_y']]
+
     # Check if the target column exists in the DataFrame
-    target_col = 'Open^NSEI'
+    target_col = 'Open_x'  # Adjust this based on your actual target column
     if target_col in merged_data.columns:
         y = merged_data[target_col]
 
@@ -51,8 +52,8 @@ if nsei_data is not None and dji_data is not None:
         st.header('Predict Opening Points for ^NSEI')
         st.write('Enter close values for other world indexes:')
         input_data = {}
-        for index_col in X.columns:
-            input_data[index_col] = st.number_input(index_col, value=0.0)
+        for col in X.columns:
+            input_data[col] = st.number_input(col, value=0.0)
 
         # Predict opening points
         if st.button('Predict Opening Points'):
