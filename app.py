@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import streamlit as st
+import matplotlib.pyplot as plt
 import os
 
 # Function to load data from Excel files in the 'WorldIndex' folder
@@ -58,6 +59,17 @@ if nsei_data is not None and dji_data is not None:
             input_values = [input_data[col] for col in X.columns]
             prediction = model.predict([input_values])[0]
             st.write(f'Predicted Opening Points for ^NSEI: {prediction}')
+
+            # Plotting
+            plt.figure(figsize=(10, 6))
+            plt.plot(y.index, y.values, label='Actual Opening Prices', marker='o')
+            plt.scatter(nsei_data.index[-1], prediction, color='red', label='Predicted Opening Price', marker='x')
+            plt.title('Historical and Predicted Opening Prices for ^NSEI')
+            plt.xlabel('Date')
+            plt.ylabel('Opening Price')
+            plt.legend()
+            st.pyplot(plt)
+
     else:
         st.error(f"Column '{y_col}' not found in the merged DataFrame.")
 else:
