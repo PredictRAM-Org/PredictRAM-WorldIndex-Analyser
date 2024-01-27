@@ -28,7 +28,7 @@ if nsei_data is not None and dji_data is not None:
 
     # Train regression model
     X = merged_data.iloc[:, 1:]  # Features (excluding Date and ^NSEI columns)
-    y = merged_data['^NSEI']
+    y = merged_data['^NSEI_data']
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
