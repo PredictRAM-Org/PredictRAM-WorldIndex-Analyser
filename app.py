@@ -1,13 +1,13 @@
-import pandas_datareader as pdr
+import yfinance as yf
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error
 import streamlit as st
 
-# Step 1: Fetch Data from WorldIndex
-nsei_data = pdr.get_data_yahoo('^NSEI')
-world_index_data = pdr.get_data_yahoo('INDEX_SYMBOL')  # Replace 'INDEX_SYMBOL' with actual symbols
+# Step 1: Fetch Data from WorldIndex using yfinance
+nsei_data = yf.download('^NSEI', start='start_date', end='end_date')  # Replace start_date and end_date with your desired date range
+world_index_data = yf.download('INDEX_SYMBOL', start='start_date', end='end_date')  # Replace 'INDEX_SYMBOL' and date range
 
 # Step 2: Prepare Data
 merged_data = pd.merge(nsei_data, world_index_data, on='Date', how='inner')
@@ -32,7 +32,7 @@ predicted_open = model.predict(X_predict)
 st.title('World Index Prediction App')
 
 # Display historical data
-st.line_chart(merged_data[['Date', 'Open^NSEI', 'Close_OTHER_INDEX1', 'Close_OTHER_INDEX2']])
+st.line_chart(merged_data[['Open^NSEI', 'Close_OTHER_INDEX1', 'Close_OTHER_INDEX2']])
 
 # Input for predicting opening points
 st.header('Predict Opening Points')
