@@ -7,20 +7,31 @@ import matplotlib.pyplot as plt
 import os
 
 # Function to load data from Excel files in the 'WorldIndex' folder
-def load_data(file_name):
+def load_data(file_name, start_date, end_date):
     file_path = os.path.join('WorldIndex', file_name)
     if os.path.exists(file_path):
         data = pd.read_excel(file_path)
         data['Date'] = pd.to_datetime(data['Date'])
         data.set_index('Date', inplace=True)
+        data = data.loc[start_date:end_date]
         return data
     else:
         st.error(f"File not found: {file_path}")
         return None
 
-# Fetch data from Excel files
-nsei_data = load_data('^NSEI_data.xlsx')
-dji_data = load_data('^DJI_data.xlsx')
+# Streamlit App
+st.title('World Index Prediction App')
+
+# User input for date range
+start_date_nsei = st.date_input("Select start date for ^NSEI_data.xlsx")
+end_date_nsei = st.date_input("Select end date for ^NSEI_data.xlsx", max_value=pd.to_datetime('today'))
+
+start_date_dji = st.date_input("Select start date for ^DJI_data.xlsx")
+end_date_dji = st.date_input("Select end date for ^DJI_data.xlsx", max_value=pd.to_datetime('today'))
+
+# Fetch data from Excel files based on user-selected date range
+nsei_data = load_data('^NSEI_data.xlsx', start_date_nsei, end_date_nsei)
+dji_data = load_data('^DJI_data.xlsx', start_date_dji, end_date_dji)
 
 # Check if data loading was successful
 if nsei_data is not None and dji_data is not None:
@@ -44,9 +55,6 @@ if nsei_data is not None and dji_data is not None:
 
         model = LinearRegression()
         model.fit(X_train, y_train)
-
-        # Streamlit App
-        st.title('World Index Prediction App')
 
         # Input for predicting opening points
         st.header('Predict Opening Points for ^NSEI')
