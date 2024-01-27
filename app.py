@@ -1,47 +1,52 @@
-import yfinance as yf
+# Import necessary libraries
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
 import streamlit as st
+import os
 
-# Step 1: Fetch Data from WorldIndex using yfinance
-nsei_data = yf.download('^NSEI', start='start_date', end='end_date')  # Replace start_date and end_date with your desired date range
-world_index_data = yf.download('INDEX_SYMBOL', start='start_date', end='end_date')  # Replace 'INDEX_SYMBOL' and date range
+# Function to load data from Excel files in the 'WorldIndex' folder
+def load_data(file_name):
+    file_path = os.path.join('WorldIndex', file_name)
+    if os.path.exists(file_path):
+        data = pd.read_excel(file_path)
+        data['Date'] = pd.to_datetime(data['Date'])
+        data.set_index('Date', inplace=True)
+        return data
+    else:
+        st.error(f"File not found: {file_path}")
+        return None
 
-# Step 2: Prepare Data
-merged_data = pd.merge(nsei_data, world_index_data, on='Date', how='inner')
+# Fetch data from Excel files
+nsei_data = load_data('^NSEI_data.xlsx')
+dji_data = load_data('^DJI_data.xlsx')
 
-# Step 3: Train Regression Model
-X = merged_data[['Close_OTHER_INDEX1', 'Close_OTHER_INDEX2', ...]]  # Replace with actual columns
-y = merged_data['Open^NSEI']
+# Check if data loading was successful
+if nsei_data is not None and dji_data is not None:
+    # Merge data on Date
+    merged_data = pd.merge(nsei_data, dji_data, how='inner', on='Date')
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-model = LinearRegression()
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-mse = mean_squared_error(y_test, y_pred)
+    # Train regression model
+    X = merged_data.iloc[:, 1:]  # Features (excluding Date and ^NSEI columns)
+    y = merged_data['Open^NSEI']
 
-# Step 4: Predict Opening Points
-# Assuming 'X_predict' contains the close values of other world indexes for prediction
-# Replace with actual values
-X_predict = merged_data[['Close_OTHER_INDEX1', 'Close_OTHER_INDEX2', ...]]
-predicted_open = model.predict(X_predict)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-# Step 5: Streamlit App
-st.title('World Index Prediction App')
+    model = LinearRegression()
+    model.fit(X_train, y_train)
 
-# Display historical data
-st.line_chart(merged_data[['Open^NSEI', 'Close_OTHER_INDEX1', 'Close_OTHER_INDEX2']])
+    # Streamlit App
+    st.title('World Index Prediction App')
 
-# Input for predicting opening points
-st.header('Predict Opening Points')
-input_data = st.text_input('Enter close values for other world indexes (comma-separated):')
-input_values = [float(x) for x in input_data.split(',')]
+    # Input for predicting opening points
+    st.header('Predict Opening Points for ^NSEI')
+    st.write('Enter close values for other world indexes:')
+    input_data = {}
+    for index_col in X.columns:
+        input_data[index_col] = st.number_input(index_col, value=0.0)
 
-# Predict opening points
-if len(input_values) == len(X.columns):
-    prediction = model.predict([input_values])[0]
-    st.write(f'Predicted Opening Points: {prediction}')
-else:
-    st.write('Invalid input. Please enter the correct number of values.')
+    # Predict opening points
+    if st.button('Predict Opening Points'):
+        input_values = [input_data[col] for col in X.columns]
+        prediction = model.predict([input_values])[0]
+        st.write(f'Predicted Opening Points for ^NSEI: {prediction}')
