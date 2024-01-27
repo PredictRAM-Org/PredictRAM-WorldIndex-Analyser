@@ -3,3 +3,4 @@ scikit-learn
 pandas
 pandas_datareader
 openpyxl
+yfinance
