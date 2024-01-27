@@ -19,13 +19,17 @@ def load_data(file_name, start_date, end_date):
         st.error(f"File not found: {file_path}")
         return None
 
-# Fetch data from Excel files based on user-selected date range
+# Streamlit App
+st.title('World Index Prediction App')
+
+# User input for date range
 start_date_nsei = st.date_input("Select start date for ^NSEI_data.xlsx")
 end_date_nsei = st.date_input("Select end date for ^NSEI_data.xlsx", max_value=pd.to_datetime('today'))
 
 start_date_dji = st.date_input("Select start date for ^DJI_data.xlsx")
 end_date_dji = st.date_input("Select end date for ^DJI_data.xlsx", max_value=pd.to_datetime('today'))
 
+# Fetch data from Excel files based on user-selected date range
 nsei_data = load_data('^NSEI_data.xlsx', start_date_nsei, end_date_nsei)
 dji_data = load_data('^DJI_data.xlsx', start_date_dji, end_date_dji)
 
@@ -61,7 +65,11 @@ if nsei_data is not None and dji_data is not None:
         input_data = {}
 
         # Fetch latest close value from ^DJI_data.xlsx
-        latest_dji_close = dji_data['Close_y'].iloc[-1]
+        if 'Close_y' in dji_data.columns and not dji_data['Close_y'].empty:
+            latest_dji_close = dji_data['Close_y'].iloc[-1]
+        else:
+            latest_dji_close = 0.0
+
         input_data['Close_y'] = st.number_input('Close value for ^DJI (Latest)', value=latest_dji_close)
 
         for col in X.columns:
