@@ -33,11 +33,11 @@ if nsei_data is not None and dji_data is not None:
 
     # Train regression model
     X = merged_data.iloc[:, 1:]  # Features (excluding Date and ^NSEI columns)
-    y_col = 'Open^NSEI'
-
+    
     # Check if the target column exists in the DataFrame
-    if y_col in merged_data.columns:
-        y = merged_data[y_col]
+    target_col = 'Open^NSEI'
+    if target_col in merged_data.columns:
+        y = merged_data[target_col]
 
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -71,6 +71,6 @@ if nsei_data is not None and dji_data is not None:
             st.pyplot(plt)
 
     else:
-        st.error(f"Column '{y_col}' not found in the merged DataFrame.")
+        st.error(f"Column '{target_col}' not found in the merged DataFrame.")
 else:
     st.error("Data loading failed.")
