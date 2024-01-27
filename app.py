@@ -19,17 +19,13 @@ def load_data(file_name, start_date, end_date):
         st.error(f"File not found: {file_path}")
         return None
 
-# Streamlit App
-st.title('World Index Prediction App')
-
-# User input for date range
+# Fetch data from Excel files based on user-selected date range
 start_date_nsei = st.date_input("Select start date for ^NSEI_data.xlsx")
 end_date_nsei = st.date_input("Select end date for ^NSEI_data.xlsx", max_value=pd.to_datetime('today'))
 
 start_date_dji = st.date_input("Select start date for ^DJI_data.xlsx")
 end_date_dji = st.date_input("Select end date for ^DJI_data.xlsx", max_value=pd.to_datetime('today'))
 
-# Fetch data from Excel files based on user-selected date range
 nsei_data = load_data('^NSEI_data.xlsx', start_date_nsei, end_date_nsei)
 dji_data = load_data('^DJI_data.xlsx', start_date_dji, end_date_dji)
 
@@ -56,12 +52,21 @@ if nsei_data is not None and dji_data is not None:
         model = LinearRegression()
         model.fit(X_train, y_train)
 
+        # Streamlit App
+        st.title('World Index Prediction App')
+
         # Input for predicting opening points
         st.header('Predict Opening Points for ^NSEI')
         st.write('Enter close values for other world indexes:')
         input_data = {}
+
+        # Fetch latest close value from ^DJI_data.xlsx
+        latest_dji_close = dji_data['Close_y'].iloc[-1]
+        input_data['Close_y'] = st.number_input('Close value for ^DJI (Latest)', value=latest_dji_close)
+
         for col in X.columns:
-            input_data[col] = st.number_input(col, value=0.0)
+            if col != 'Close_y':
+                input_data[col] = st.number_input(col, value=0.0)
 
         # Predict opening points
         if st.button('Predict Opening Points'):
